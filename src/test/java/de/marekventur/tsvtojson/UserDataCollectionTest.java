@@ -3,66 +3,79 @@ package de.marekventur.tsvtojson;
 import static org.junit.Assert.*;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.Scanner;
+import java.util.zip.ZipInputStream;
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.google.common.io.Files;
 
 public class UserDataCollectionTest {
-
-	private File uncompressFolder(File in) throws ZipException {
-		File folder = Files.createTempDir();
-		new ZipFile(in).extractAll(folder.getAbsolutePath());
-		return folder;
-	}
 	
 	@Test
-	public void testItCopiesStaticData() throws IOException, ZipException {
+	public void testItCopiesStaticData() throws IOException {
 		UserDataCollection udc = new UserDataCollection();
 		udc.close();
 		
-		File uncompressedFolder = uncompressFolder(udc.getOutputFile());
-	
-		assertTrue(new File(uncompressedFolder, "index.html").exists());
-		assertTrue(new File(uncompressedFolder, "README.txt").exists());
-		assertTrue(new File(uncompressedFolder, "viewer-includes/main.js").exists());
+		ZipFile zipFile = new ZipFile(udc.getOutputFile());
 		
-		assertTrue (FileUtils.readFileToString(new File(uncompressedFolder, "index.html")).length() > 20);
+		InputStream inputStream = zipFile.getInputStream(zipFile.getEntry("/README.txt"));
+		Scanner s = new Scanner(inputStream);
+		assertEquals("lkjasflkjas", s.next());
+		s.close();
 		
-		Files.deleteRecursively(uncompressedFolder);
+		inputStream = zipFile.getInputStream(zipFile.getEntry("/viewer-includes/main.js"));
+		s = new Scanner(inputStream);
+		assertEquals("asdfasdfsafd", s.next());
+		s.close();
+		
 		udc.getOutputFile().deleteOnExit();
 	}
 	
 	@Test
-	public void testItAllowsDataToBeWritten() throws IOException, ZipException {
+	public void testItAllowsDataToBeWritten() throws IOException {
 		UserDataCollection udc = new UserDataCollection();
 		
 		Writer writer1 = new OutputStreamWriter(udc.getOutputStream("scrobbles.tsv"));
 		writer1.write("foo");
-		writer1.flush();
 		
 		Writer writer2 = new OutputStreamWriter(udc.getOutputStream("json/scrobbles.json"));
 		writer2.write("bar");
-		writer2.flush();
+		
+		writer1.write("foo");
+		writer2.write("bar");
+		
+		writer1.close();
+		writer2.close();
 		
 		udc.close();
 		
-		File uncompressedFolder = uncompressFolder(udc.getOutputFile());
-	
-
-		assertEquals("foo", (FileUtils.readFileToString(new File(uncompressedFolder, "scrobbles.tsv"))));
-		assertEquals("bar", (FileUtils.readFileToString(new File(uncompressedFolder, "json/scrobbles.json"))));
+		ZipFile zipFile = new ZipFile(udc.getOutputFile());
 		
-		Files.deleteRecursively(uncompressedFolder);
+		InputStream inputStream = zipFile.getInputStream(zipFile.getEntry("scrobbles.tsv"));
+		Scanner s = new Scanner(inputStream);
+		assertEquals("foofoo", s.next());
+		s.close();
+		
+		inputStream = zipFile.getInputStream(zipFile.getEntry("json/scrobbles.json"));
+		s = new Scanner(inputStream);
+		assertEquals("barbar", s.next());
+		s.close();
+
 		udc.getOutputFile().deleteOnExit();
 	}
+	
 
 }

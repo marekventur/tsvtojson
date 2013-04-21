@@ -20,6 +20,8 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import de.marekventur.tsvtojson.MockDataCollection;
+
 import au.com.bytecode.opencsv.CSVReader;
 
 public class CsvProcessorTest {
@@ -80,11 +82,13 @@ public class CsvProcessorTest {
 	
 	private List<String[]> convertTestFile(File file) throws IOException {
 		InputStream input = new FileInputStream(testScrobbleData);
-		OutputStream output = new ByteArrayOutputStream();
+		MockDataCollection output = new MockDataCollection();
 		
 		new CsvProcessor().process(input, output);
 		
-		return stringToCsvList(output.toString());
+		output.close();
+		
+		return stringToCsvList(output.getData("scrobbles.tsv"));
 	}
 	
 	private List<String[]> stringToCsvList(String input) throws IOException {

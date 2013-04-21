@@ -20,6 +20,11 @@ import de.marekventur.tsvtojson.processors.UserStreamProcessor;
  */
 public class CsvProcessor extends CsvInputCsvOutputSuggestingUserStreamProcessor<ScrobbleInputColumns, CsvProcessor.OutputColumns> implements UserStreamProcessor {
 	
+	@Override
+	protected String getOutputFilePathName() {
+		return "scrobbles.tsv";
+	}
+	
 	public enum OutputColumns implements CsvColumnsWithHeaderNames {
 		DATETIME("datetime"),
 		UNIXTIME("unixtime"),
@@ -60,7 +65,6 @@ public class CsvProcessor extends CsvInputCsvOutputSuggestingUserStreamProcessor
 		return ScrobbleInputColumns.values();
 	}
 
-
 	@Override
 	protected void processRowWithSuggestion(Map<ScrobbleInputColumns, String> row, String[] suggestion,
 			CSVWriter writer) throws IOException {
@@ -87,6 +91,9 @@ public class CsvProcessor extends CsvInputCsvOutputSuggestingUserStreamProcessor
 			}
 		}
 	}
+
+
+	
 
 }
 

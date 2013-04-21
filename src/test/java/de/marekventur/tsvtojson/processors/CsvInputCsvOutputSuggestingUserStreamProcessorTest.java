@@ -11,6 +11,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import de.marekventur.tsvtojson.MockDataCollection;
+
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class CsvInputCsvOutputSuggestingUserStreamProcessorTest {
@@ -50,25 +52,29 @@ public class CsvInputCsvOutputSuggestingUserStreamProcessorTest {
 	@Test
 	public void test() throws IOException {		
 		InputStream input = new ByteArrayInputStream("Row1Col1\tRow1Col2\nRow2Col1\tRow2Col2".getBytes());
-		OutputStream output = new ByteArrayOutputStream();
+		MockDataCollection output = new MockDataCollection();
 		
 		getTestProcessor().process(input, output);
 		
+		output.close();
+		
 		String expected = "\"col 2\"\t\"col 1\"\n\"Row1Col2\"\t\"Row1Col1\"\n\"Row2Col2\"\t\"Row2Col1\"\n";
 		
-		assertEquals(expected, output.toString());
+		assertEquals(expected, output.getData("test.tsv"));
 	}
 	
 	@Test
 	public void testNullFields() throws IOException {
 		InputStream input = new ByteArrayInputStream("Row1Col1\tNULL\nRow2Col1\tRow2Col2".getBytes());
-		OutputStream output = new ByteArrayOutputStream();
+		MockDataCollection output = new MockDataCollection();
 		
 		getTestProcessor().process(input, output);
 		
+		output.close();
+		
 		String expected = "\"col 2\"\t\"col 1\"\n\"\"\t\"Row1Col1\"\n\"Row2Col2\"\t\"Row2Col1\"\n";
 		
-		assertEquals(expected, output.toString());
+		assertEquals(expected, output.getData("test.tsv"));
 	}
 	
 	@Test
@@ -91,16 +97,23 @@ public class CsvInputCsvOutputSuggestingUserStreamProcessorTest {
 				writer.writeNext(suggestion);
 			}
 
+			@Override
+			protected String getOutputFilePathName() {
+				return "test.tsv";
+			}
+
 		};
 		
 		InputStream input = new ByteArrayInputStream("Row1Col1\tRow1Col2\nRow2Col1\tRow2Col2".getBytes());
-		OutputStream output = new ByteArrayOutputStream();
+		MockDataCollection output = new MockDataCollection();
 		
 		processor.process(input, output);
 		
+		output.close();
+		
 		String expected = "\"col 3\"\t\"col 1\"\n\"\"\t\"Row1Col1\"\n\"\"\t\"Row2Col1\"\n";
 		
-		assertEquals(expected, output.toString());
+		assertEquals(expected, output.getData("test.tsv"));
 	}
 	
 	private CsvInputCsvOutputSuggestingUserStreamProcessor<TestInputColumns, TestOutputColumns> getTestProcessor() {
@@ -120,6 +133,11 @@ public class CsvInputCsvOutputSuggestingUserStreamProcessorTest {
 					Map<TestInputColumns, String> row, String[] suggestion,
 					CSVWriter writer) throws IOException {
 				writer.writeNext(suggestion);
+			}
+
+			@Override
+			protected String getOutputFilePathName() {
+				return "test.tsv";
 			}
 
 		};

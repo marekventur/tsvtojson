@@ -7,9 +7,11 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.marekventur.tsvtojson.DataCollection;
+
 import au.com.bytecode.opencsv.CSVReader;
 
-public abstract class CsvInputUserStreamProcessor<I extends CsvColumns> implements UserStreamProcessor {
+public abstract class CsvInputUserStreamProcessor<I extends CsvColumns> extends SingleOutputUserStreamProcessor {
 
 	protected static final String NULL_INPUT_VALUE = "NULL";
 	
@@ -18,7 +20,8 @@ public abstract class CsvInputUserStreamProcessor<I extends CsvColumns> implemen
 	
 	public void process(InputStream input, OutputStream output) throws IOException {
 		CSVReader reader = new CSVReader(new InputStreamReader(input), '\t', '"');
-			
+		OutputStream outputStream = output;
+		
 		try {
 			String[] row;
 			while ((row = reader.readNext()) != null) {
@@ -30,11 +33,12 @@ public abstract class CsvInputUserStreamProcessor<I extends CsvColumns> implemen
 					}
 					rowMap.put(column, cell);
 				}
-				processRow(rowMap, output);
+				processRow(rowMap, outputStream);
 		    }
 		} finally {
 			reader.close();
 		}
 	}
-
+	
+	public void close() throws IOException { }
 }

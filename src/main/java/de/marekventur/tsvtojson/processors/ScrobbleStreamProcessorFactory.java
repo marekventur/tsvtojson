@@ -1,10 +1,10 @@
-package de.marekventur.tsvtojson.processors.scrobbles;
+package de.marekventur.tsvtojson.processors;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import de.marekventur.tsvtojson.Types;
-import de.marekventur.tsvtojson.processors.UserStreamProcessor;
+import de.marekventur.tsvtojson.processors.scrobbles.CsvProcessor;
 
 public class ScrobbleStreamProcessorFactory {
 	public List<UserStreamProcessor> create(Types type) {
