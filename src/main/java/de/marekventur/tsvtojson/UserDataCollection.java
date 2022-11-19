@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,7 +45,7 @@ public class UserDataCollection implements DataCollection, Closeable {
 	}
 
 	public void close() throws IOException {
-		outputFile = File.createTempFile("userDataCollection", ".zip");
+		outputFile = Files.createTempFile("userDataCollection", ".zip").toFile();
 
 		ZipOutputStream zipOutputStream = new ZipOutputStream(
 				new FileOutputStream(outputFile));
@@ -82,8 +83,7 @@ public class UserDataCollection implements DataCollection, Closeable {
 			throw new RuntimeException("Path {} is already in use.");
 		}
 
-		TemporaryFile tempBufferFile = new TemporaryFile(File.createTempFile(
-				"tempStreamBuffer", ".tmp"));
+		TemporaryFile tempBufferFile = new TemporaryFile(Files.createTempFile("tempStreamBuffer", ".tmp").toFile());
 		temporaryFileMap.put(path, tempBufferFile);
 
 		return new BufferedOutputStream(new FileOutputStream(tempBufferFile));
